@@ -8,6 +8,8 @@
     - dnsmasq
     - openvpn
     - udev
+  tags:
+    - dependencies
 
 - name: Generate RSA keys for the CA and Server
   command: openssl genrsa -out {{ item }}.key {{ openvpn_key_size }}
@@ -133,6 +135,7 @@
 
 - name: Allow OpenVPN through ufw
   ufw: rule=allow port={{ openvpn_port }} proto={{ openvpn_protocol }}
+  tags: ufw
 
 - name: Copy OpenVPN configuration file into place
   template: src=etc_openvpn_server.conf.j2 dest=/etc/openvpn/server.conf
@@ -152,6 +155,8 @@
 
 - name: Copy the ca.crt and ta.key files that clients will need in order to connect to the OpenVPN server
   command: cp {{ openvpn_path }}/{{ item[1] }} {{ openvpn_path }}/{{ item[0] }}
+  tags:
+    - skip_ansible_lint
   with_nested:
     - openvpn_clients
     - ["ca.crt", "ta.key"]
